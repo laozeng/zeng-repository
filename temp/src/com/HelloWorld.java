@@ -2,6 +2,6 @@ package com;
 
 public class HelloWorld {
 	public static void main(String[] args) {
-		System.out.println("zengchang helloworld!");
+		System.out.println("master helloworld!");
 	}
 }
