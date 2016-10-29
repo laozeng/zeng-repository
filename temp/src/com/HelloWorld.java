@@ -9,4 +9,8 @@ public class HelloWorld {
 	public void show(){
 		System.out.println("zengjie helloworld111");
 	}
+	
+	public void update(){
+		System.out.println("update at 2016-10-29 10:15");
+	}
 }
