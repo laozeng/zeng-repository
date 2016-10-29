@@ -11,6 +11,6 @@ public class HelloWorld {
 	}
 	
 	public void update(){
-		System.out.println("update at 2016-10-29 10:151111");
+		System.out.println("update at 2016-10-29 10:");
 	}
 }
