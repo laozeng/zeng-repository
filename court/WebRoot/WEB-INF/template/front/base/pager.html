@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>pager.html</title>
+	
+    <meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+    <meta http-equiv="description" content="this is my page">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<style type="text/css">
+	.pageNum{ width:auto; margin:15px 0px 30px 150px;; text-align:center;}
+	.pageNum a{color:#666; width:auto; padding:0 5px; height:20px; background:#fff;margin-left:5px; line-height:20px; text-align:center; float:left;font-size:14px;font-family:"宋体";border:1px solid silver;}
+	.pageNum a.dqx,.pageNum a:hover{color:#fff; background:#F36C00; cursor: pointer;}
+</style>
+  </head>
+  <body>
+    ## 定义一个带有参数的方法  方法名：createPager  参数：$url
+  	#macro(createPager $url)
+  		 ## 分页代码
+	     <div class="pageNum" align="center">
+	 		#set($nextPage = $questions.pageIndex + 1) ##下一页变量   注意：velocity表达式的加减运算两边需要有空格
+	  		#set($prevPage = $questions.pageIndex - 1) ##上一页变量
+	  	    #if($questions.pageIndex != 1)
+	  	    	<a href="$url?pageIndex=1" > 首页</a>
+	  	    	<a href="$url?pageIndex=$prevPage">< 上一页</a>
+	  	    #end
+	  	    #foreach($index in [1..$questions.totalPage])
+				<a #if($index != $questions.pageIndex) href="$url?pageIndex=$index" #else style="background:#F36C00;color: #FFF;" #end >$index</a> 	
+	  	    #end
+	  	    #if($questions.pageIndex != $questions.totalPage)
+	  	    	<a href="$url?pageIndex=$nextPage">下一页 ></a>
+	  	    	<a href="$url?pageIndex=$questions.totalPage">末页 </a>
+	  	    #end
+	  	    <a>共$questions.totalPage页</a>
+	 	 </div>
+  	#end
+  </body>
+</html>

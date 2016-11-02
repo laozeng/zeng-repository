@@ -1,0 +1,102 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ajaxPage.html</title>
+	
+    <meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+    <meta http-equiv="description" content="this is my page">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    
+    <link rel="stylesheet" type="text/css" href="$!webPath/resource/css/pagination.css">
+    <!-- 注意：jQuery的js文件一定要放在 jquery.pagination.js的前面-->
+	<script src="$!webPath/resource/js/jquery-1.8.3.min.js" type="text/javascript"></script>
+	<script type="text/javascript" src="$!webPath/resource/js/jquery.pagination.js"></script>
+	<script type="text/javascript">
+	//var totalCount = 100;//总记录数(注意总记录数应该从后台获取)
+	//var totalPage = 10;//总页数
+	var pageSize = 5;//每页显示的行数
+	var pageIndex = 1;//当前页码
+	var totalCount = 100; //不知道怎么回事，totalCount总是从后台取不到值
+$(function(){
+	//加载出页码
+	getData(pageIndex);
+	 //每一次选择的回调函数
+	function pageselectCallback(page_index, jq){
+		pageIndex = page_index + 1;
+		//page_index为当前页码
+		getData(pageIndex);
+		return false;
+	}
+	 
+	//alert($("#totalCount").val());
+	 
+	//totalCount = $("#totalCount").val();
+	
+    $("#pagination").pagination(totalCount, {//总记录数
+		num_edge_entries: 1, //边缘页数
+		num_display_entries: 10, //主体页数
+		callback: pageselectCallback,
+		items_per_page: pageSize, //每页显示行数
+		prev_text: "前一页",
+		next_text: "后一页"
+    });
+});
+
+function  getData(pageIndex){
+	/* $.post("$!webPath/index/getJson",{pageIndex:pageIndex},function(result){
+		$(".temp_tr").remove();
+		if(result.length == 0){
+			$("#first_tr").after("<tr class='temp_tr'><td colspan='4' style='color:red;font-size:20px'>暂无数据，请联系管理员！</td></tr>");
+		}else{
+			for(var i=0;i<result.length;i++){
+				$("#first_tr").after("<tr class='temp_tr'><td >"+(i+1)+"</td><td >"+result[i].name+"</td><td >"+result[i].age+"</td><td >"+result[i].phone+"</td></tr>");
+			}
+		}
+	}); */
+	var totalCount = 0;
+	 $.ajax({
+		url:"$!webPath/getJson1",
+		dataType:"json",
+		data:{pageIndex:pageIndex},
+		success:function(pager){
+// 			alert(pager.totalCount);
+			//$("#totalCount").val(pager.totalCount);
+			//alert($("#totalCount").val());
+			$(".temp_tr").remove();
+			if(pager.result.length == 0){
+				$("#first_tr").after("<tr class='temp_tr'><td colspan='4' style='color:red;font-size:20px'>暂无数据，请联系管理员！</td></tr>");
+			}else{
+				for(var i=0;i<pager.result.length;i++){
+					$("#first_tr").after("<tr class='temp_tr'><td >"+(i+1)+"</td><td >"+pager.result[i].name+"</td><td >"+pager.result[i].age+"</td><td >"+pager.result[i].phone+"</td></tr>");
+				}
+			}
+		},
+		error:function(){
+			alert('ajax出现错误！');
+		}
+	}); 
+	
+}
+</script>
+  </head>
+  
+  <body>
+				<input type="hidden" value="" id="totalCount" />
+	  <table border="1" style="text-align: center;" align="center" >
+		<tr id="first_tr">
+			<td>编号</td>
+			<td>姓名</td>
+			<td>年龄</td>
+			<td>电话</td>
+		</tr>
+		<tr>
+			<td colspan="4" id="pagination">
+				<!-- 存放页码 -->
+			</td>
+		</tr>
+	</table>
+	<h1><a href="$!webPath">返回首页</a></h1>
+<!-- 	<div id="pagination" align="center" style="text-align: center;width:600px;"></div> -->
+  </body>
+</html>

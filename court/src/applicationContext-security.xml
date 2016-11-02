@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+	http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-2.0.4.xsd">
+        
+    <beans:bean id="loggerListener"
+		class="org.springframework.security.event.authentication.LoggerListener" />
+	<beans:bean id="securityManager"
+		class="com.luhu.base.security.support.SecurityManagerSupport" />
+	<beans:bean id="sessionRegistry"
+		class="org.springframework.security.concurrent.SessionRegistryImpl" />
+	<global-method-security secured-annotations="enabled">
+	</global-method-security>
+	<http auto-config="false" entry-point-ref="loginUrlEntryPoint">
+		<!--不用Filter去处理的url-->
+<!-- 		<intercept-url pattern="/login.htm*" filters="none" /> -->
+<!-- 		<intercept-url pattern="/domain_error.htm*" filters="none" /> -->
+		<intercept-url pattern="*.css" filters="none" />
+		<intercept-url pattern="*.gif" filters="none" />
+		<intercept-url pattern="*.jpg" filters="none" />
+		<intercept-url pattern="*.jpeg" filters="none" />
+		<intercept-url pattern="*.png" filters="none" />
+		<intercept-url pattern="*.bmp" filters="none" />
+		<!-- max-sessions允许最大登录用户数，exception-if-maximum-exceeded为false时候第二个用户登录踢出第一个，为true拒绝第二个用户登录 -->
+		<concurrent-session-control max-sessions="1"
+			exception-if-maximum-exceeded="false" expired-url="/outline"
+			session-registry-alias="sessionRegistry" />
+	</http>
+	<authentication-manager alias="authenticationManager" />
+</beans:beans>

@@ -1,0 +1,35 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Home</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="Gifty Responsive web template, Bootstrap Web Templates, Flat Web Templates, Andriod Compatible web template, 
+Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, SonyErricsson, Motorola web design" />
+</head>
+<body>
+  <div>
+  	<h1 align="center" >欢迎你来到法院首页！</h1>
+  	<table align="center" style="border: 1px solid red;width:1000px;">
+  		<tr>
+  			<td>编号</td>
+  			<td>问题</td>
+  			<td>答案</td>
+  		</tr>
+  		#foreach($question in $questions.result)
+  			<tr>
+	  			<td>$velocityCount</td>
+	  			<td>$question.questionName</td>
+	  			<td>$question.questionAnswer</td>
+  			</tr>
+  		#end
+  		<tr>
+  			<td colspan="3">
+  			   #parse("$!webPath/front/base/pager.html") ## 引用pager.html页面，这个页面中有velocity表达式，但可以继续解析
+  			   #createPager("/index.htm")   ## 该方法为pager.html页面中的方法，需要传递一个到该页面的参数
+  			</td>
+  		</tr>
+  	</table>
+  </div>
+</body>
+</html>		

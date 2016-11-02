@@ -1,0 +1,30 @@
+/* container */
+.ke-container-blue {
+	display: block;
+	border: 1px solid #0099CC;
+	background-color: #FFF;
+	overflow: hidden;
+	margin: 0;
+	padding: 0;
+}
+/* toolbar */
+.ke-container-blue .ke-toolbar {
+	border-bottom: 1px solid #0099CC;
+	background-color: #F0F0EE;
+	padding: 2px 5px;
+	text-align: left;
+	overflow: hidden;
+	zoom: 1;
+}
+/* statusbar */
+.ke-container-blue .ke-statusbar {
+	position: relative;
+	background-color: #F0F0EE;
+	border-top: 1px solid #0099CC;
+	font-size: 0;
+	line-height: 0;
+	*height: 12px;
+	overflow: hidden;
+	text-align: center;
+	cursor: s-resize;
+}
