@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 在context.xml文件文件中配置了1分钟之后就将HttpSession对象钝化到本地硬盘的一个session文件夹中 -->
+<Context>
+     <Manager className="org.apache.catalina.session.PersistentManager" maxIdleSwap="1">
+     <Store className="org.apache.catalina.session.FileStore" directory="session"/>
+     </Manager>
+</Context>

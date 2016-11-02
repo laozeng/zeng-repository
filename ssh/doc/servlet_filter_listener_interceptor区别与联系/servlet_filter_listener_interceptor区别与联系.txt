@@ -1,0 +1,178 @@
+servlet/filter/listener/interceptor区别与联系
+  一、概念：
+         1、servlet：servlet是一种运行服务器端的java应用程序，具有独立于平台和协议的特性，并且可以动态的生成web页面，它工作在客户端请求与服务器响应的中间层。
+                    最早支持 Servlet 技术的是 JavaSoft 的 Java Web Server。此后，一些其它的基于 Java 的 Web Server 开始支持标准的 Servlet API。
+         Servlet 的主要功能在于交互式地浏览和修改数据，生成动态 Web 内容。这个过程为：
+1) 客户端发送请求至服务器端；
+2) 服务器将请求信息发送至 Servlet；
+3) Servlet 生成响应内容并将其传给服务器。响应内容动态生成，通常取决于客户端的请求；
+4) 服务器将响应返回给客户端。
+在 Web 应用程序中，一个 Servlet 在一个时刻可能被多个用户同时访问。这时 Web 容器将为每个用户创建一个线程来执行 Servlet。
+如果 Servlet 不涉及共享资源的问题，不必关心多线程问题。但如果 Servlet 需要共享资源，需要保证 Servlet 是线程安全的。
+最新版本3.1，为了简化开发流程，Servlet 3.0 引入了注解（annotation），这使得 web 部署描述符 web.xml 不再是必须的选择。
+
+         2、filter：filter是一个可以复用的代码片段，可以用来转换HTTP请求、响应和头信息。Filter不像Servlet，它不能产生一个请求或者响应，它只是修改对某一资源的请求，或者修改从某一的响应。
+         Servlet中的过滤器Filter是实现了javax.servlet.Filter接口的服务器端程序，主要的用途是过滤字符编码、做一些业务逻辑判断等。其工作原理是，只要你在web.xml文件配置好要拦截的客户端请求，
+         它都会帮你拦截到请求，此时你就可以对请求或响应(Request、Response)统一设置编码，简化操作；同时还可进行逻辑判断，如用户是否已经登陆、有没有权限访问该页面等等工作。它是随你的web应用启动而启动的，
+         只初始化一次，以后就可以拦截相关请求，只有当你的web应用停止或重新部署的时候才销毁。Filter可认为是Servlet的一种“变种”，它主要用于对用户请求进行预处理，也可以对HttpServletResponse进行后处理，
+         是个典型的处理链。它与Servlet的区别在于：它不能直接向用户生成响应。完整的流程是：Filter对用户请求进行预处理，接着将请求交给Servlet进行处理并生成响应，最后Filter再对服务器响应进行后处理。
+Filter有如下几个用处。
+
+在HttpServletRequest到达Servlet之前，拦截客户的HttpServletRequest。
+根据需要检查HttpServletRequest，也可以修改HttpServletRequest头和数据。
+在HttpServletResponse到达客户端之前，拦截HttpServletResponse。
+根据需要检查HttpServletResponse，也可以修改HttpServletResponse头和数据。
+Filter有如下几个种类。
+
+用户授权的Filter：Filter负责检查用户请求，根据请求过滤用户非法请求。
+日志Filter：详细记录某些特殊的用户请求。
+负责解码的Filter：包括对非标准编码的请求解码。
+能改变XML内容的XSLT Filter等。
+Filter可负责拦截多个请求或响应；一个请求或响应也可被多个请求拦截。
+创建一个Filter只需两个步骤：
+
+建Filter处理类；
+web.xml文件中配置Filter。
+下面先介绍一个简单的记录日志的Filter，这个Filter负责拦截所有的用户请求，并将请求的信息记录在日志中。
+代码
+public class LogFilter implements Filter 
+{
+//FilterConfig可用于访问Filter的配置信息
+private FilterConfig config;
+//实现初始化方法
+public void init(FilterConfig config)
+{
+this.config = config; 
+}
+//实现销毁方法
+public void destroy()
+{
+this.config = null; 
+}
+//执行过滤的核心方法
+public void doFilter(ServletRequest request,ServletResponse response, FilterChain chain)throws IOException,ServletException
+{
+//---------下面代码用于对用户请求执行预处理---------
+//获取ServletContext对象，用于记录日志
+ServletContext context = this.config.getServletContext(); 
+long before = System.currentTimeMillis();
+System.out.println("开始过滤...");
+//将请求转换成HttpServletRequest请求
+HttpServletRequest hrequest = (HttpServletRequest)request;
+//记录日志
+context.log("Filter已经截获到用户的请求地址： " + hrequest.getServletPath());
+//Filter只是链式处理，请求依然放行到目的地址
+chain.doFilter(request, response); 
+//---------下面代码用于对服务器响应执行后处理---------
+long after = System.currentTimeMillis();
+//记录日志
+context.log("过滤结束");
+//再次记录日志
+context.log("请求被定位到" + hrequest.getRequestURI() + "所花的时间为: " + (after - before)); 
+}
+}
+复制代码
+复制代码
+上面程序实现了doFilter()方法，实现该方法就可实现对用户请求进行预处理，也可实现对服务器响应进行后处理——它们的分界线为是否调用了chain.doFilter()，
+执行该方法之前，即对用户请求进行预处理；执行该方法之后，即对服务器响应进行后处理。
+
+在上面的请求Filter中，仅在日志中记录请求的URL，对所有的请求都执行chain.doFilter (request,reponse)方法，当Filter对请求过滤后，依然将请求发送到目的地址。
+如果需要检查权限，可以在Filter中根据用户请求的HttpSession，判断用户权限是否足够。如果权限不够，直接调用重定向即可，无须调用chain.doFilter(request,reponse)方法。
+
+   在web.xml文件中我们需要对其需要拦截的请求配置监听范围，或者说过滤哪些url。
+1     <filter>
+2         <filter-name>logfilter</filter-name>
+3         <filter-class>com.mine.test.LogFilter</filter-class>
+4     </filter>
+5     <filter-mapping>
+6         <filter-name>logfilter</filter-name>
+7         <url-pattern>/*</url-pattern> <!--配置过滤的范围   后缀符合即过滤  此处为全部过滤-->
+8     </filter-mapping>
+在web.xml文件中配置该Filter，使用init-param元素为该Filter配置参数，init-param可接受如下两个子元素：
+param-name：指定参数名。
+param-value：指定参数值。
+其实struts2本身就依托于一个总过滤器：
+<filter>
+        <filter-name>struts2</filter-name>
+        <filter-class>org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>struts2</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+ 多个匹配的Filter，是按照其在web.xml中配置的顺序来执行的。 
+所以这也就是，把自己的Filter或者其他的Filter（比如UrlRewrite的Filter）放在Struts的DispatcherFilter的前面的原因。因为，它们需要在请求被Struts2框架处理之前，做一些前置的工作。 
+当Filter被调用，并且进入了Struts2的DispatcherFilter中后，Struts2会按照在Action中配置的Interceptor Stack中的Interceptor的顺序，来调用Interceptor。 
+
+ 3、listener：监听器，从字面上可以看出listener主要用来监听只用。通过listener可以监听web服务器中某一个执行动作，并根据其要求作出相应的响应。
+ 通俗的语言说就是在application，session，request三个对象创建消亡或者往其中添加修改删除属性时自动执行代码的功能组件。比如spring 的总监听器 会在服务器启动的时候实例化我们配置的bean对象 、
+  hibernate 的 session 的监听器会监听session的活动和生命周期，负责创建，关闭session等活动。
+Servlet的监听器Listener，它是实现了javax.servlet.ServletContextListener 接口的服务器端程序，它也是随web应用的启动而启动，只初始化一次，随web应用的停止而销毁。
+主要作用是： 做一些初始化的内容添加工作、设置一些基本的内容、比如一些参数或者是一些固定的对象等等。
+         4、interceptor：是在面向切面编程的，就是在你的service或者一个方法，前调用一个方法，或者在方法后调用一个方法，是基于JAVA的反射机制。比如动态代理就是拦截器的简单实现，
+              在你调用方法前打印出字符串（或者做其它业务逻辑的操作），也可以在你调用方法后打印出字符串，甚至在你抛出异常的时候做业务逻辑的操作。
+    servlet、filter、listener是配置到web.xml中（web.xml 的加载顺序是：context-param -> listener -> filter -> servlet ），interceptor不配置到web.xml中，
+    struts的拦截器配置到struts.xml中。spring的拦截器配置到spring.xml中。 
+
+        二、生命周期：
+        1、servlet：一般继承HttpServlet（一般的，通用Servlet由javax.servlet.GenericServlet实现Servlet接口。程序设计人员可以通过使用或继承这个类来实现通用Servlet应用。
+        javax.servlet.http.HttpServlet实现了专门用于响应HTTP请求的Servlet，提供了响应对应HTTP标准请求的doGet()、doPost()等方法），web.xml配置servlet时如果加上load-on-start
+        （在servlet的配置当中，<load-onstartup>1</load-on-startup>的含义是：标记容器是否在启动的时候就加载这个servlet。当值为0或者大于0时，表示容器在应用启动时就加载这个servlet；
+        当是一个负数时或者没有指定时，则指示容器在该servlet被选择时才加载。正数的值越小，启动该servlet的优先级越高。）为1时候，Web应用启动时候加载Servlet。
+        当servlet被部署在应用服务器中（应用服务器中用于管理Java组件的部分被抽象成为容器）以后，由容器控制servlet的生命周期。除非特殊指定，否则在容器启动的时候，servlet是不会被加载的，
+        servlet只会在第一次请求的时候被加载和实例化。servlet一旦被加载，一般不会从容器中删除，直至应用服务器关闭或重新启动。但当容器做内存回收动作时，servlet有可能被删除。
+        也正是因为这个原因，第一次访问servlet所用的时间要大大多于以后访问所用的时间。servlet在服务器的运行生命周期为，在第一次请求（或其实体被内存垃圾回收后再被访问）时被加载并执行一次初始化方法，
+        跟着执行正式运行方法，之后会被常驻并每次被请求时直接执行正式运行方法，直到服务器关闭或被清理时执行一次销毁方法后实体销毁。Java服务器页面（JSP）是HttpServlet的扩展。
+        由于HttpServlet大多是用来响应HTTP请求，并返回Web页面（例如HTML、XML），所以不可避免地，在编写servlet时会涉及大量的HTML内容，这给servlet的书写效率和可读性带来很大障碍，
+        JSP便是在这个基础上产生的。其功能是使用HTML的书写格式，在适当的地方加入Java代码片断，将程序员从复杂的HTML中解放出来，更专注于servlet本身的内容。
+        JSP在首次被访问的时候被应用服务器转换为servlet，在以后的运行中，容器直接调用这个servlet，而不再访问JSP页面。JSP的实质仍然是servlet。
+        (1)、装入：启动服务器时加载Servlet的实例； 
+        (2)、初始化：web服务器启动时或web服务器接收到请求时，或者两者之间的某个时刻启动。初始化工作有init（）方法负责执行完成； 
+        (3)、调用：从第一次到以后的多次访问，都是只调用doGet()或doPost()方法； 
+        (4)、销毁：停止服务器时调用destroy()方法，销毁实例。 
+        
+           2、filter：（必须实现javax.Servlet.Filter接口，并且必须定义以下三个方法:init(),destory(),doFilter()，空实现也行） 
+         (1)、启动服务器时加载过滤器的实例，并调用init()方法来初始化实例； 
+         (2)、每一次请求时都只调用方法doFilter()进行处理； 
+         (3)、停止服务器时调用destroy()方法，销毁实例。
+         3、listener：Servlet的监听器Listener，它是实现了javax.servlet.ServletContextListener 接口的服务器端程序，它也是随web应用的启动而启动，只初始化一次，随web应用的停止而销毁。
+           web.xml 的加载顺序是：context- param -> listener -> filter -> servlet 
+       4、interceptor：以struts的拦截器为例，加载了struts.xml以后，初始化相应拦截器。当action请求来时调用intercept方法，服务器停止销毁interceptor。
+
+       三、职责
+       1、servlet：
+        创建并返回一个包含基于客户请求性质的动态内容的完整的html页面；
+        创建可嵌入到现有的html页面中的一部分html页面（html片段）；
+        读取客户端发来的隐藏数据；
+        读取客户端发来的显示数据；
+        与其他服务器资源（包括数据库和java的应用程序）进行通信；
+        通过状态代码和响应头向客户端发送隐藏数据。
+       2、filter：
+        filter能够在一个请求到达servlet之前预处理用户请求，也可以在离开servlet时处理http响应：
+        在执行servlet之前，首先执行filter程序，并为之做一些预处理工作；
+        根据程序需要修改请求和响应；
+        在servlet被调用之后截获servlet的执行
+         3、listener：职责如概念。
+          servlet2.4规范中提供了8个listener接口，可以将其分为三类，分别如下：
+         第一类：与servletContext有关的listner接口。包括：ServletContextListener、ServletContextAttributeListener
+         第二类：与HttpSession有关的Listner接口。包括：HttpSessionListner、HttpSessionAttributeListener、HttpSessionBindingListener、                     
+          HttpSessionActivationListener；
+         第三类：与ServletRequest有关的Listener接口，包括：ServletRequestListner、ServletRequestAttributeListener
+        4、interceptor：与过滤器十分相似，通过层层拦截，处理用户的请求和响应。
+
+        四、几个区别：
+        1,servlet 流程是短的，url传来之后，就对其进行处理，之后返回或转向到某一自己指定的页面。它主要用来在 业务处理之前进行控制.
+        2,filter 流程是线性的， url传来之后，检查之后，可保持原来的流程继续向下执行，被下一个filter, servlet接收等，而servlet 处理之后，不会继续向下传递。filter功能可用来保持流程继续按照原来的方式进行下去，或者主导流程，而servlet的功能主要用来主导流程。
+         filter可用来进行字符编码的过滤，检测用户是否登陆的过滤，禁止页面缓存等
+        3, servlet,filter都是针对url之类的，而listener是针对对象的操作的，如session的创建，session.setAttribute的发生，在这样的事件发生时做一些事情。
+     可用来进行：Spring整合Struts,为Struts的action注入属性，web应用定时任务的实现，在线人数的统计等
+       4，interceptor 拦截器，类似于filter,不过在struts.xml中配置，不是在web.xml,并且不是针对URL的，而是针对action,当页面提交action时，进行过滤操作，相当于struts1.x提供的plug-in机制，可以看作，前者是struts1.x自带的filter,而interceptor 是struts2 提供的filter.
+    与filter不同点：（１）不在web.xml中配置，而是在struts.xml中完成配置，与action在一起
+                            ( 2  ) 可由action自己指定用哪个interceptor 来在接收之前做事    
+        5，struts2中的过滤器和拦截器的区别与联系：
+      （1）、拦截器是基于java反射机制的，而过滤器是基于函数回调的。
+      （2）、过滤器依赖与servlet容器，而拦截器不依赖与servlet容器。
+      （3）、拦截器只能对Action请求起作用，而过滤器则可以对几乎所有请求起作用。
+      （4）、拦截器可以访问Action上下文、值栈里的对象，而过滤器不能。
+      （5）、在Action的生命周期中，拦截器可以多次调用，而过滤器只能在容器初始化时被调用一次。

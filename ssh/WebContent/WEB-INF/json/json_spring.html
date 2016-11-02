@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>spring集成json</title>
+<script type="text/javascript" src="/js/jquery-1.8.3.min.js"></script>
+<script type="text/javascript" >
+//js转换时间字符串
+function formatDate(date, format) {   
+    if (!date) return;   
+    if (!format) format = "yyyy-MM-dd";   
+    switch(typeof date) {   
+        case "string":   
+            date = new Date(date.replace(/-/, "/"));   
+            break;   
+        case "number":   
+            date = new Date(date);   
+            break;   
+    }    
+    if (!date instanceof Date) return;   
+    var dict = {   
+        "yyyy": date.getFullYear(),   
+        "M": date.getMonth() + 1,   
+        "d": date.getDate(),   
+        "H": date.getHours(),   
+        "m": date.getMinutes(),   
+        "s": date.getSeconds(),   
+        "MM": ("" + (date.getMonth() + 101)).substr(1),   
+        "dd": ("" + (date.getDate() + 100)).substr(1),   
+        "HH": ("" + (date.getHours() + 100)).substr(1),   
+        "mm": ("" + (date.getMinutes() + 100)).substr(1),   
+        "ss": ("" + (date.getSeconds() + 100)).substr(1)   
+    };       
+    return format.replace(/(yyyy|MM?|dd?|HH?|ss?|mm?)/g, function() {   
+        return dict[arguments[0]];   
+    });                   
+}
+
+/*
+alert(formatDate("2010-04-30", "yyyy-MM-dd HH:mm:ss"));   
+alert(formatDate("2010-4-29 1:50:00", "yyyy-MM-dd HH:mm:ss"));  
+*/
+
+	//spring集成json
+	function getString(){
+		$.get("/json/getString.mvc",function(data){
+			$("#string_content").html(data);
+		});//,"text"
+	}
+	
+	function getBean(){
+		$.getJSON("/json/getBean.mvc",function(data){
+			var info = "姓名："+data.name+"，地址："+data.address+"，时间:"+data.birthday;
+			$("#bean_content").html(info);
+		});
+	}
+	
+	function getList(){
+		$.getJSON("/json/getList.mvc",function(data){
+			var total = "";
+			for(var i=0;i<data.length;i++){
+				var user = data[i];
+				total += "姓名："+user.name+"，地址："+user.address+"，时间:"+user.birthday+"<br/>";
+			}
+			$("#list_content").html(total);
+		});
+	}
+	
+	function getMap(){
+		$.getJSON("/json/getMap.mvc",function(data){
+			//迭代map  自动迭代map的键，而后可以通过键获取值
+			var total = "";
+			for(var key in data){
+				//这里面的时间格式是：2015-09-02T12:05:10(该模式是基于Struts2集成json的形式，要将T去掉,获取去掉T之后的)
+				var time = data[key].birthday;
+				//time = time.substring(0,time.indexOf("T"));
+				time = time.replace("T"," ");
+				total += "姓名："+data[key].name+"，地址："+data[key].address+"，时间:"+time+"<br/>";
+			}
+			$("#map_content").html(total);
+		});
+	}
+	
+	function getResultByParam(){
+		$.getJSON("/json/getResultByParam.mvc",{param:$("#param").val()},function(data){
+			var status = data.status;
+			var result = data.result;
+			if(status == "success"){
+				$("#other_content").html(result);
+			}else{
+				$("#other_content").html("");
+				alert(result);
+			}
+		});
+	}
+	
+	function translateEntityToRomate(){
+		$.post("/json/translateEntityToRomate.mvc",{id:$("#id").val(),name:$("#name").val(),address:$("#address").val(),birthday:$("#birthday").val()},function(data){
+			var status = data.status;
+			if(status == "success"){
+				$("#translate_result").html("传递成功！");
+			}else{
+				$("#translate_result").html("传递失败！");
+			}
+		});
+	}
+	
+	
+	//传统方式获取json,此处传统的方式与struts中的一致，所以不再赘述！
+	/* function getStringCommon(){
+		$.get("/json/getStringCommon.htm",function(data){
+			$("#string_content_common").html(data);
+		},"text");
+	}
+	
+	function getBeanCommon(){
+		$.getJSON("/json/getBeanCommon.htm",function(data){
+			var info = "姓名："+data.username+"，地址："+data.userAddress+"，时间:"+data.userRegisterTime;
+			$("#bean_content_common").html(info);
+		});
+	}
+	
+	function getListCommon(){
+		$.getJSON("/json/getListCommon.htm",function(data){
+			var total = "";
+			for(var i=0;i<data.length;i++){
+				var user = data[i];
+				total += "姓名："+user.username+"，地址："+user.userAddress+"，时间:"+user.userRegisterTime+"<br/>";
+			}
+			$("#list_content_common").html(total);
+		});
+	}
+	
+	function getMapCommon(){
+		$.get("/json/getMapCommon.htm",function(data){
+			//迭代map  自动迭代map的键，而后可以通过键获取值
+			var total = "";
+			data = eval("("+data+")");  //此处必须强制转换成json
+			var array = data.array; //获取集合
+			var size = data.size;  //获取长度
+			for(var i=0;i<size;i++){
+				var key = "user"+i;
+				var user = array[0][key];
+				total += "姓名："+user.username+"，地址："+user.userAddress+"，时间:"+user.userRegisterTime+"<br/>";
+			}
+			$("#map_content_common").html(total);
+		},"text");
+	} */
+	
+	function getResultBySerialize(){
+		$("#getResultBySerialize").after($("#person_info_form").serialize());
+	}
+	function getResultBySerializeArray(){
+		$("#getResultBySerializeArray").after($(":radio").serializeArray());
+	}
+</script>
+</head>
+<body>
+	<div style="float:left;width:45%;">
+	    <form id="person_info_form" method="post" action="">
+	    	姓名： <input type="text" value="曾昌" name="name"/><br/>
+	    	年龄： <input type="text" value="24" name="age"/><br/>
+	    	性别： <input type="radio" value="男" name="gender" checked="checked" />男 
+	    		&nbsp;&nbsp; <input type="radio" value="女" name="gender" />女<br/>
+	    	所在城市：
+	    	<select name="address">
+	    		<option selected="selected">湖北</option>	
+	    		<option>北京</option>	
+	    		<option>上海</option>	
+	    	</select><br/>
+	    	描述：<textarea rows="3" cols="10" name="description">我叫曾昌，来自湖北孝感！</textarea>
+	    </form>
+	    <p>
+	    	<input value="获取serialize()方法获取的值" onclick="getResultBySerialize()" type="button" id="getResultBySerialize"/> <br/> <br/>
+	    	<input value="获取serializeArray()方法获取的值" onclick="getResultBySerializeArray()" type="button" id="getResultBySerializeArray"/> <br/>
+	    </p>
+		<h3>演示spring集成json</h3>
+		<div id="string">
+			<input type="button" value="获取字符串（json）" onclick="getString()"/>  <br/>
+			<div id="string_content">
+				
+			</div>
+		</div><br/>
+		
+		<div id="bean">
+			<input type="button" value="获取实体对象（json）" onclick="getBean()"/>  <br/>
+			<div id="bean_content">
+				
+			</div>
+		</div><br/>
+		
+		<div id="list">
+			<input type="button" value="获取list集合（json）" onclick="getList()"/>  <br/>
+			<div id="list_content">
+				
+			</div>
+		</div><br/>
+		
+		<div id="map">
+			<input type="button" value="获取map集合（json）" onclick="getMap()"/>  <br/>
+			<div id="map_content">
+				
+			</div>
+		</div><br/>
+		
+		<div id="other">
+			<input type="button" value="获取多个字符串结果（json）" onclick="getResultByParam()"/>  <br/>
+			<p>请填写参数：<input type="text" id="param" value="zengchang" /></p>
+			<div id="other_content"></div><br/>
+			
+			<input type="button" value="传递实体到后台（json）" onclick="translateEntityToRomate()"/>  <br/>
+			<p>请填写参数：</p>
+			id:<input type="text" id="id" value="1" /><br/>
+			name:<input type="text" id="name" value="曾昌" /><br/>
+			address:<input type="text" id="address" value="孝感" /><br/>
+			birthday:<input type="text" id="birthday" value="2016-2-29" /><br/>
+			<div id="translate_result" style="color:red;font-size:14px;"></div>
+		</div>
+	</div>
+	
+	<!-- <div style="float:left;width:45%;">
+		<h3>演示传统方式获取json</h3>
+		<div id="string_common">
+			<input type="button" value="获取字符串（json）" onclick="getStringCommon()"/>  <br/>
+			<div id="string_content_common">
+				
+			</div>
+		</div><br/>
+		
+		<div id="bean_common">
+			<input type="button" value="获取实体对象（json）" onclick="getBeanCommon()"/>  <br/>
+			<div id="bean_content_common">
+				
+			</div>
+		</div><br/>
+		
+		<div id="list_common">
+			<input type="button" value="获取list集合（json）" onclick="getListCommon()"/>  <br/>
+			<div id="list_content_common">
+				
+			</div>
+		</div><br/>
+		
+		<div id="map_common">
+			<input type="button" value="获取map集合（json）" onclick="getMapCommon()"/>  <br/>
+			<div id="map_content_common">
+				
+			</div>
+		</div><br/>
+	</div> -->
+</body>
+</html>

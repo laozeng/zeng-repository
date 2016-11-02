@@ -1,0 +1,28 @@
+<!-- springmvc核心控制器 -->
+   <servlet>
+   	<servlet-name>ssh</servlet-name>
+   	<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+   	<load-on-startup>1</load-on-startup>
+   	<init-param>
+   		<param-name>contextConfigLocation</param-name>
+		<param-value>/WEB-INF/classes/applicationContext*.xml</param-value>
+   	</init-param> 
+   	 <!-- web容器启动的同时，初始化spring配置，值越小启动的时机越早
+    	说明：如果测试时可以不配置该项，如果配置了会延缓web容器的启动时间，
+    	如果正式发布了项目可以配置该项，因为那样会延缓打开页面的时间
+     -->
+	 <!--<load-on-startup>0</load-on-startup> -->
+   </servlet>
+   <servlet-mapping>
+   	<servlet-name>ssh</servlet-name>
+   	<url-pattern>*.mvc</url-pattern>
+<!--    	<url-pattern>/</url-pattern> -->
+   </servlet-mapping>
+   
+    <context-param>
+		<param-name>webAppRootKey</param-name>
+		<param-value>ssh.root</param-value>
+	</context-param>
+	<listener>
+		<listener-class>org.springframework.web.util.WebAppRootListener</listener-class>
+	</listener>

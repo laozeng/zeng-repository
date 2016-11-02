@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>用户列表页面</title>
+	
+    <meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+    <meta http-equiv="description" content="this is my page">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    
+    <!--<link rel="stylesheet" type="text/css" href="./styles.css">-->
+
+  <script type="text/javascript" src="../../../js/jquery-1.11.1.min.js"></script>
+  <script type="text/javascript">
+  	  $(function(){
+			$(".delete").click(function(){
+				if(confirm("您确定要删除吗？")){
+					var id = $(this).attr("id");
+					/* $.post("$!webPath/userController/del1.html",{_method:"delete",id:id},function(result){
+						if(result == "true"){
+							location.reload();
+						}
+					},"text"); */
+					location.href = "$!webPath/userController/del1/"+id+".html?_method=delete";
+				}
+			});  		 
+  	  });
+  </script>
+  </head>
+  
+  <body>
+  <h1 align="center">会员列表&nbsp;&nbsp;&nbsp;&nbsp;<a href="$!webPath/userController/add.html">添加</a></h1>
+	<table align="center" border="1px solid red" >
+		<tr>
+			<td>编号</td>
+			<td>姓名</td>
+			<td>地址</td>
+			<td>年龄</td>
+			<td>生日</td>
+			<td>操作</td>
+		</tr>
+			#foreach($user in $users)
+			<tr>
+				<td>$velocityCount</td>
+				<td>$!user.name</td>
+				<td>$!user.address</td>
+				<td>$!user.age</td>
+				<td>$!date.format('yyyy-MM-dd',$!user.birthday)</td>
+				<td>
+					<a href="#" class="delete" id="${user.id}">删除</a> <!-- $!webPath/userController/del/${user.id}.html?_method=delete -->
+					<a href="$!webPath/userController/edit/${user.id}.html">修改</a>
+				</td>
+			</tr>
+			#end
+	</table>
+  </body>
+</html>

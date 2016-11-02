@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>   
+    <!DOCTYPE dwr PUBLIC "-//GetAhead Limited//DTD Direct Web Remoting 2.0//EN" "http://getahead.org/dwr/dwr20.dtd">   
+    <dwr>   
+      <allow>   
+         <!-- 表示前台每调用一次该类就会实例化一个新的实例，其中 DWRUserAccess代表前台中的dwr/interface/DWRUserAccess.js-->
+         <create creator="new" javascript="DWRAction">
+         	 <param name="class" value="com.controller.DWRAction"></param>
+         </create>
+         <create creator="new" javascript="myDate">
+         	<param name="class" value="java.util.Date" ></param>
+         </create>
+         <create creator="new" javascript="format">
+         	<param name="class" value="java.text.SimpleDateFormat" ></param>
+         </create>
+         
+         <!-- 实现省市级联模板 -->
+         <create creator="new" javascript="AreaUtil">
+         	 <param name="class" value="com.dom4j.AreaUtil"></param>
+         </create> 
+         <convert converter="bean" match="com.dom4j.Area"></convert> 
+		 <convert converter="bean" match="com.dom4j.Province"></convert>
+		 <convert converter="bean" match="com.dom4j.City"></convert>
+		 <convert converter="bean" match="com.dom4j.Town"></convert> 
+		 
+		 <!-- 要转换的实体类 -->
+		 <convert converter="bean" match="com.entity.User">
+		    <!-- String username, String userAddress, Date userRegisterTime -->
+		   <param name="include" value="username,userAddress,userRegisterTime" /> 
+		 </convert>
+		 <convert converter="bean" match="java.util.Date" />
+      </allow>
+      
+      <!-- 
+      	<allow>
+		    <create creator="new" javascript="JDate">
+		      <param name="class" value="java.util.Date"/>
+		    </create>
+		    <create creator="new" javascript="Student">
+		      <param name="class" value="com.dwr.test.Student"/>
+		      <include method="getUserName"/>  
+		     <include method="getUserName"/>
+		     <include method="getDate"/>
+		     <include method="getList"/>
+		     <include method="getConver"/>
+		     <include method="getMap"/>
+		     <include method="getMapList"/>
+		    </create>
+		     <convert converter="bean" match="com.dwr.test.*" ></convert>  
+		     <convert converter="bean" match="*" ></convert>  
+		  </allow>
+       -->   
+    </dwr>  

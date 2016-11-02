@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>add.html</title>
+	
+    <meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+    <meta http-equiv="description" content="this is my page">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    
+    <!--<link rel="stylesheet" type="text/css" href="./styles.css">-->
+
+  </head>
+  
+  <body>
+    <form action="$!webPath/userController/edit.html" method="post">
+    	<input type="hidden" value="${user.id}" name="id"/>
+    	<input type="hidden" value="put" name="_method" />  <!-- 这句话告诉spring当前的请求为put请求 -->
+		name:<input type="text" name="name" value="${user.name}"/><br/>
+		age:<input type="text" name="age" value="${user.age}" /><br/>
+		address:<input type="text" name="address" value="${user.address}"/><br/>
+		birthday:<input type="text" name="birthday" value="$!date.format('yyyy-MM-dd',$!user.birthday)"/><br/>
+		<input type="submit" value="提交" />
+	</form>
+  </body>
+</html>

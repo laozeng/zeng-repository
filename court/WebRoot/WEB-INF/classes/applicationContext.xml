@@ -1,0 +1,174 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:webflow="http://www.springframework.org/schema/webflow-config"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+        http://www.springframework.org/schema/webflow-config http://www.springframework.org/schema/webflow-config/spring-webflow-config-2.0.xsd">
+	<!-- 扫描各个包 -->
+	<context:component-scan base-package="com.*" />
+	<!-- 导入配置文件 -->
+	<context:property-placeholder location="classpath:jdbc.properties" />
+	<!-- 配置数据源 -->
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+	</bean>
+	<!-- sessionFactory配置 -->
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+				<prop key="hibernate.hbm2ddl.auto">create</prop>
+			</props>
+		</property>
+		<property name="annotatedClasses">
+			<list>
+ 				<value>com.bean.Question</value> 
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 启用支持Annotation注解方式的事务管理 -->
+	<bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	<tx:annotation-driven transaction-manager="transactionManager" />
+	
+	<!-- SpringMVC上传文件时，需要配置MultipartResolver处理器 org.springframework.web.multipart.commons.CommonsMultipartResolver-->  
+    <bean id="multipartResolver" class="com.util.MyMultipartResolver">  
+        <property name="defaultEncoding" value="UTF-8"/>  
+        <!-- 指定所上传文件的总大小不能超过2G。注意maxUploadSize属性的限制不是针对单个文件，而是所有文件的容量之和  单位为byte(字节)-->  
+        <property name="maxUploadSize" value="2000000000"/>  
+    </bean>
+	
+	<!-- 以下配置可以使springmvc同时支持html和jsp视图 -->
+	<!-- velocity表达式需要的配置 -->
+	<bean id="velocityConfigurer" class="org.springframework.web.servlet.view.velocity.VelocityConfigurer"> 
+		<!--声明模板文件所在的路径 (实际资源文件所在的文件夹)-->
+ 	    <property name="resourceLoaderPath" value="WEB-INF/template/"></property>  
+		<!--设置输入输出的编码方式 -->
+	    <property name="velocityProperties">
+            <props>
+                <prop key="input.encoding">utf-8</prop>
+                <prop key="output.encoding">utf-8</prop>
+            </props>
+        </property>
+	</bean> 
+	<!-- spring 管理下velocity配置 -->
+	<bean id="velocityViewResolver" class="org.springframework.web.servlet.view.velocity.VelocityViewResolver"> 
+		<property name="cache" value="true" />
+        <property name="prefix" value="" />
+		<!--  声明velocity表达式支持的后缀 -->
+ 	    <property name="suffix" value=".html" />
+	    <!-- 配置html的优先级最高  value值越小，优先级越高，0的优先级最高-->
+	    <property name="order" value="0" />
+		<!-- 如果你需要使用Spring 对 Velocity宏命令的支持, 将这个属性设为true  -->
+        <property name="exposeSpringMacroHelpers" value="true" /> 
+        <property name="contentType" value="text/html;charset=utf-8" />
+        <!-- velocity时间格式化工具 -->
+        <property name="dateToolAttribute" value="date"></property>
+        <!-- 是否开放session -->
+        <property name="exposeSessionAttributes" value="true"></property>
+        <!-- 是否开放request -->
+        <property name="exposeRequestAttributes" value="true"></property>
+        <!-- 允许session覆盖旧值Cannot expose session attribute 'user' because of an existing model object of the same name -->
+        <property name="allowSessionOverride" value="true" ></property>
+        <!-- request引用的名称 -->
+        <property name="requestContextAttribute" value="rc"></property>
+	</bean>
+	
+	<!-- 配置jsp视图解析器 -->
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">   
+	     <property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />  
+	     <property name="prefix" value="/WEB-INF/template/" />   
+	     <property name="suffix" value=".jsp"></property>  
+	     <property name="order" value="1"/>  
+	</bean>
+	
+	<!-- freemarker的基本配置，包括模板所在的位置和常用的方法配置 -->
+    <bean id="freemarkerConfig" class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">  
+	    <property name="templateLoaderPath" value="/WEB-INF/template/" />  
+	    <property name="freemarkerSettings">  
+	        <props>  
+	            <prop key="template_update_delay">0</prop>  
+	            <prop key="default_encoding">UTF-8</prop>  
+	            <prop key="number_format">0.##########</prop>  
+	            <prop key="datetime_format">yyyy-MM-dd HH:mm:ss</prop>  
+	            <prop key="classic_compatible">true</prop>  
+	            <prop key="template_exception_handler">ignore</prop>  
+	        </props>  
+	    </property>  
+	</bean>
+	<!-- freemarker视图解析器 -->
+	<bean id="freemarkerViewResolver" class="org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver">  
+	    <property name="suffix" value=".ftl" />  
+	    <property name="contentType" value="text/html;charset=UTF-8" />
+	    <!-- 设置freemarker的优先级高于jsp(现在暂时不要改配置，如果要的话那么全局视图就会找ftl后缀的) -->
+<!-- 		<property name="order" value="0"/>  -->
+	</bean>
+	
+<!--  	<mvc:view-controller path="/" view-name="redirect:/front/index" />  -->
+<!--  	<mvc:view-controller path="/" view-name="/index" />  -->
+	
+	<!-- 静态资源访问(可以直接以路径的方式访问)  两种方式：1.在spring.xml中配置一下片段  2.在web.xml中配置 -->
+	<mvc:annotation-driven />
+	<context:annotation-config />
+	<mvc:resources location="/resource/" mapping="/resource/**" />
+	<mvc:resources location="/upload/" mapping="/upload/**" />
+	<mvc:resources location="/attached/" mapping="/attached/**" />
+	<!-- 可以直接访问WebRoot之下的资源 -->
+	<mvc:resources location="/" mapping="/**" />
+	
+<!--  	<mvc:exclude-mapping path="/doUpload"/>  -->
+	
+	<!--  自定义拦截链配置 拦截没有登录的后台-->  
+	<mvc:interceptors>
+		<mvc:interceptor>
+		    <!-- 指定要拦截的路径 -->
+			<mvc:mapping path="/admin/*"/>
+			<!-- 排除拦截的地址 -->
+<!-- 			<mvc:exclude-mapping path="/index/*"/>  -->
+			<bean class="com.interceptor.SystemInterceptor">
+					<property name="redirectUrl" value="/admin/login.html" ></property> 
+			</bean>
+		</mvc:interceptor>
+	</mvc:interceptors>
+	
+	<!-- 处理时间类型相应不到问题 -->
+	<!-- 
+	<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+		<property name="webBindingInitializer">
+			<bean class="com.util.MyDataBinding" />
+		</property>
+		<property name="messageConverters">
+			<list>
+				<bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter" />
+				<bean class="org.springframework.http.converter.StringHttpMessageConverter">
+					<property name="writeAcceptCharset" value="false" />
+					<property name="supportedMediaTypes">
+						<list>
+							<value>text/plain;charset=UTF-8</value>
+							<value>*/*;charset=UTF-8</value>
+						</list>
+					</property>
+				</bean>
+				<bean class="org.springframework.http.converter.xml.SourceHttpMessageConverter" />
+				<bean class="org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter" />
+				<bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"></bean>
+			</list>
+		</property>
+	</bean>
+	 -->
+</beans>

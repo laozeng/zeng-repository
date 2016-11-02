@@ -1,0 +1,144 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.1//EN" "http://struts.apache.org/dtds/struts-2.1.dtd">
+<struts>
+	<!--
+	    struts.xml中配置节点顺序 
+		result-types -> interceptors -> default-interceptor-ref -> default-action-ref -> default-class-ref -> 
+		global-results -> global-exception-mappings -> action 
+	-->
+	
+	<!-- 开发者模式（如果修改了xml配置文件，不用重启服务器就能起作用） -->
+ 	<constant name="struts.devMode" value="true"></constant> 
+	<!-- 允许上传的最大限制 -->
+	<constant name="struts.multipart.maxSize" value="1048576000" />
+	 <!-- 不拦截指定url -->
+	 <constant name="struts.action.excludePattern" value="/uploadJson.jsp" />
+	 
+	<!-- 设置action的后缀,后面带一个空格后缀，表示可以不要加后缀    此处注意：如果后缀有jsp,html等，那么会导致访问不了webcontent根目录之下的静态页面-->
+ 	<constant name="struts.action.extension" value="htm,do,jsp,action," />   
+	<!-- 支持斜杠 -->
+	<constant name="struts.enable.SlashesInActionNames" value="true"/>
+
+	<!-- 支持调用后台的静态方法 -->
+	<constant name="struts.ognl.allowStaticMethodAccess" value="true" />
+	
+<!-- 	<constant name="struts.multipart.saveDir" value="/repository"/>  -->
+	
+	<!-- 配置基类包，其他包可以继承该包 -->
+	<package name="parentPackage" extends="struts-default,json-default" namespace="">
+	    <!-- 配置拦截器 -->
+		<interceptors>
+		    <!-- 自定义异常处理拦截器(此处可以不需要，除非错误信息要写入到log中) -->
+			<interceptor name="struts2Exception" class="com.exception.Struts2Exception"></interceptor>
+			<interceptor name="struts2Interceptor" class="com.interceptor.Struts2Interceptor"></interceptor>
+			<interceptor-stack name="myStack">
+				<interceptor-ref name="defaultStack" />
+				<interceptor-ref name="struts2Interceptor" />
+<!-- 				<interceptor-ref name="struts2Exception" /> -->
+			</interceptor-stack>
+		</interceptors>
+		<!-- 默认拦截器 -->
+		<default-interceptor-ref name="myStack" />
+	
+		<!--  
+			配置默认action (进入该action的前提是报下面的错误1.方法找不到；2.action找不到：) 
+			//1.java.lang.NoSuchMethodException: com.filter.FilterAction.filterUI1()
+			2.There is no Action mapped for action name filter1/filterUI. - [unknown location]
+		-->
+		<default-action-ref name="defaultAction" /> 
+		
+		<!-- 全局结果 -->
+		<global-results>
+			<result name="500">/WEB-INF/struts2-exception/500.jsp</result>
+			<result name="404">/WEB-INF/struts2-exception/404.jsp</result>
+			<result name="frontLogin" type="redirect">/toLogin.jsp</result>
+			<result name="backgroundLogin" type="redirect">/background/login_loginUI.action</result>
+			<result name="index" type="redirect">/index.action</result>
+			<result name="Index">/WEB-INF/jsp/frontpage/frontPage.jsp</result>
+			<result name="notLogin">/WEB-INF/user/login.jsp</result>
+		</global-results>
+		<!-- Struts2异常处理 -->
+		<global-exception-mappings>
+			<exception-mapping result="404" exception="java.lang.NoSuchMethodException" />
+			<exception-mapping result="500" exception="java.lang.Exception" />
+		</global-exception-mappings>
+		
+		<action name="defaultAction">
+			<result type="redirectAction">user/indexUI.htm</result>
+		</action> 
+	</package>
+	
+	<!-- 此处可以指定父类 -->
+	<package name="childrenPackage" extends="parentPackage" namespace="">
+		<action name="user/*" class="userAction" method="{1}" >
+			<result name="indexUI">/WEB-INF/user/jstl.jsp</result>
+			<result name="user_list">/WEB-INF/user/user_list.jsp</result>
+			<result name="add_user">/WEB-INF/user/user_add.jsp</result>
+			<result name="update_user">/WEB-INF/user/user_add.jsp</result>
+			
+			<!-- 防止表单重复提交 -->
+            <!-- <interceptor-ref name="token" ></interceptor-ref>
+			<interceptor-ref name="defaultStack" ></interceptor-ref>
+		    <result name="invalid.token" >/WEB-INF/user/subError.jsp </result> -->
+			<result name="save_user" type="redirectAction">user/user_list</result>
+			<result name="save_user_fail" >/WEB-INF/user/user_add.jsp</result>
+			<result name="delete_user" type="redirectAction">user/user_list</result>
+			<result name="delete_user_fail" type="redirectAction">user/user_list</result>
+			<result name="loginUI" >/WEB-INF/user/login.jsp</result>
+			<result name="fail" type="redirectAction">user/loginUI.htm</result>
+			<result name="success" type="redirectAction">user/user_list.htm</result>
+		</action>
+		
+		<action name="json/*" class="jsonAction" method="{1}">
+			<result name="jsonUI" >/WEB-INF/json/json.html</result>
+			<result name="getString" type="json">
+				<param name="root">address</param>
+			</result>
+			<result name="getBean" type="json">
+				<param name="root">user</param>
+			</result>
+			<result name="getList" type="json">
+				<param name="root">users</param>
+			</result>
+			<result name="getMap" type="json">
+				<param name="root">userMap</param>
+				<!-- 
+				<param name="noCache">true</param>
+				 //ignoreHierarchy 为false时表示要序列化根对象的所有基类
+       			<param name="ignoreHierarchy">false</param>
+					// 这里指定将被Struts2序列化的属性，该属性在action中必须有对应的getter方法 
+                 	默认将会序列所有有返回值的getter方法的值，而无论该方法是否有对应属性 
+                <param name="root">dataMap</param>
+                 	指定是否序列化空的属性 
+                <param name="excludeNullProperties">true</param>
+                 	这里指定将序列化dataMap中的那些属性 
+                <param name="includeProperties">
+                     userList.*
+                </param>
+                 	这里指定将要从dataMap中排除那些属性，这些排除的属性将不被序列化，一半不与上边的参数配置同时出现 
+                <param name="excludeProperties">
+                     SUCCESS
+                </param>
+				 -->
+			</result>
+			
+			<result name="getResultByParam" type="json">
+				<param name="ignoreHierarchy">false</param>
+				<param name="includeProperties">status,result</param>
+			</result>
+		</action>
+		
+		<action name="dwr/*" class="com.action.DWRAction" method="{1}">
+			<result name="dwrUI" >/WEB-INF/dwr/dwr.html</result>
+			<result name="proCityUI" >/WEB-INF/dwr/proCity.jsp</result>
+		</action>
+		
+		<action name="filter/*" class="com.filter.FilterAction" method="{1}">
+			<result name="filterUI">/WEB-INF/filter/filter.jsp</result>
+		</action>
+	</package>
+	
+	<!-- 引入其他struts2的配置文件 (这样子可以多人协同开发)-->
+	<include file="struts-zhangsan.xml" />
+	<include file="struts-lishi.xml" />
+</struts>    

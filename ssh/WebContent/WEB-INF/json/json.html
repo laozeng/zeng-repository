@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>struts2集成json</title>
+<script type="text/javascript" src="/js/jquery-1.8.3.min.js"></script>
+<script type="text/javascript" >
+//js转换时间字符串
+function formatDate(date, format) {   
+    if (!date) return;   
+    if (!format) format = "yyyy-MM-dd";   
+    switch(typeof date) {   
+        case "string":   
+            date = new Date(date.replace(/-/, "/"));   
+            break;   
+        case "number":   
+            date = new Date(date);   
+            break;   
+    }    
+    if (!date instanceof Date) return;   
+    var dict = {   
+        "yyyy": date.getFullYear(),   
+        "M": date.getMonth() + 1,   
+        "d": date.getDate(),   
+        "H": date.getHours(),   
+        "m": date.getMinutes(),   
+        "s": date.getSeconds(),   
+        "MM": ("" + (date.getMonth() + 101)).substr(1),   
+        "dd": ("" + (date.getDate() + 100)).substr(1),   
+        "HH": ("" + (date.getHours() + 100)).substr(1),   
+        "mm": ("" + (date.getMinutes() + 100)).substr(1),   
+        "ss": ("" + (date.getSeconds() + 100)).substr(1)   
+    };       
+    return format.replace(/(yyyy|MM?|dd?|HH?|ss?|mm?)/g, function() {   
+        return dict[arguments[0]];   
+    });                   
+}
+
+/*
+alert(formatDate("2010-04-30", "yyyy-MM-dd HH:mm:ss"));   
+alert(formatDate("2010-4-29 1:50:00", "yyyy-MM-dd HH:mm:ss"));  
+*/
+
+	//struts2集成json
+	function getString(){
+		$.getJSON("/json/getString.htm",function(data){
+			$("#string_content").html(data);
+		});
+	}
+	
+	function getBean(){
+		$.getJSON("/json/getBean.htm",function(data){
+			var info = "姓名："+data.username+"，地址："+data.userAddress+"，时间:"+data.userRegisterTime;
+			$("#bean_content").html(info);
+		});
+	}
+	
+	function getList(){
+		$.getJSON("/json/getList.htm",function(data){
+			var total = "";
+			for(var i=0;i<data.length;i++){
+				var user = data[i];
+				total += "姓名："+user.username+"，地址："+user.userAddress+"，时间:"+user.userRegisterTime+"<br/>";
+			}
+			$("#list_content").html(total);
+		});
+	}
+	
+	function getMap(){
+		$.getJSON("/json/getMap.htm",function(data){
+			//var domObj = eval('('+data+')');
+			/* $.each(data,function(index,obj){
+				alert(obj[index]);
+			}); */
+			//迭代map  自动迭代map的键，而后可以通过键获取值
+			var total = "";
+			for(var key in data){
+				//这里面的时间格式是：2015-09-02T12:05:10(该模式是基于Struts2集成json的形式，要将T去掉,获取去掉T之后的)
+				var time = data[key].userRegisterTime;
+				//time = time.substring(0,time.indexOf("T"));
+				time = time.replace("T"," ");
+				total += "姓名："+data[key].username+"，地址："+data[key].userAddress+"，时间:"+time+"<br/>";
+			}
+			$("#map_content").html(total);
+		});
+	}
+	
+	function getResultByParam(){
+		$.getJSON("/json/getResultByParam.htm",{param:$("#param").val()},function(data){
+			var status = data.status;
+			var result = data.result;
+			if(status == "success"){
+				$("#other_content").html(result);
+			}else{
+				alert(result);
+			}
+		});
+	}
+	
+	
+	//传统方式获取json
+	function getStringCommon(){
+		$.get("/json/getStringCommon.htm",function(data){
+			$("#string_content_common").html(data);
+		},"text");
+	}
+	
+	function getBeanCommon(){
+		$.getJSON("/json/getBeanCommon.htm",function(data){
+			var info = "姓名："+data.username+"，地址："+data.userAddress+"，时间:"+data.userRegisterTime;
+			$("#bean_content_common").html(info);
+		});
+	}
+	
+	function getListCommon(){
+		$.getJSON("/json/getListCommon.htm",function(data){
+			var total = "";
+			for(var i=0;i<data.length;i++){
+				var user = data[i];
+				total += "姓名："+user.username+"，地址："+user.userAddress+"，时间:"+user.userRegisterTime+"<br/>";
+			}
+			$("#list_content_common").html(total);
+		});
+	}
+	
+	function getMapCommon(){
+		$.get("/json/getMapCommon.htm",function(data){
+			//迭代map  自动迭代map的键，而后可以通过键获取值
+			var total = "";
+			data = eval("("+data+")");  //此处必须强制转换成json
+			var array = data.array; //获取集合
+			var size = data.size;  //获取长度
+			for(var i=0;i<size;i++){
+				var key = "user"+i;
+				var user = array[0][key];
+				total += "姓名："+user.username+"，地址："+user.userAddress+"，时间:"+user.userRegisterTime+"<br/>";
+			}
+			$("#map_content_common").html(total);
+		},"text");
+	}
+</script>
+</head>
+<body>
+	<div style="float:left;width:45%;">
+		<h3>演示struts2集成json</h3>
+		<div id="string">
+			<input type="button" value="获取字符串（json）" onclick="getString()"/>  <br/>
+			<div id="string_content">
+				
+			</div>
+		</div><br/>
+		
+		<div id="bean">
+			<input type="button" value="获取实体对象（json）" onclick="getBean()"/>  <br/>
+			<div id="bean_content">
+				
+			</div>
+		</div><br/>
+		
+		<div id="list">
+			<input type="button" value="获取list集合（json）" onclick="getList()"/>  <br/>
+			<div id="list_content">
+				
+			</div>
+		</div><br/>
+		
+		<div id="map">
+			<input type="button" value="获取map集合（json）" onclick="getMap()"/>  <br/>
+			<div id="map_content">
+				
+			</div>
+		</div><br/>
+		
+		<div id="other">
+			<input type="button" value="获取多个字符串结果（json）" onclick="getResultByParam()"/>  <br/>
+			<p>请填写参数：<input type="text" id="param" value="zengchang" /></p>
+			<div id="other_content">
+			</div>
+		</div>
+	</div>
+	
+	<div style="float:left;width:45%;">
+		<h3>演示传统方式获取json</h3>
+		<div id="string_common">
+			<input type="button" value="获取字符串（json）" onclick="getStringCommon()"/>  <br/>
+			<div id="string_content_common">
+				
+			</div>
+		</div><br/>
+		
+		<div id="bean_common">
+			<input type="button" value="获取实体对象（json）" onclick="getBeanCommon()"/>  <br/>
+			<div id="bean_content_common">
+				
+			</div>
+		</div><br/>
+		
+		<div id="list_common">
+			<input type="button" value="获取list集合（json）" onclick="getListCommon()"/>  <br/>
+			<div id="list_content_common">
+				
+			</div>
+		</div><br/>
+		
+		<div id="map_common">
+			<input type="button" value="获取map集合（json）" onclick="getMapCommon()"/>  <br/>
+			<div id="map_content_common">
+				
+			</div>
+		</div><br/>
+	</div>
+</body>
+</html>

@@ -3,7 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="melibrary.com.genuitec.eclipse.j2eedt.core.MYECLIPSE_JAVAEE_5_CONTAINER"/>
-	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry kind="lib" path="WebRoot/WEB-INF/lib/antlr-2.7.7.jar"/>
 	<classpathentry kind="lib" path="WebRoot/WEB-INF/lib/aopalliance-1.0.jar"/>
@@ -48,5 +47,7 @@
 	<classpathentry kind="lib" path="WebRoot/WEB-INF/lib/velocity-1.7-dep.jar"/>
 	<classpathentry kind="lib" path="WebRoot/WEB-INF/lib/velocity-1.7.jar"/>
 	<classpathentry kind="lib" path="WebRoot/WEB-INF/lib/velocity-tools-2.0.jar"/>
+	<classpathentry kind="lib" path="E:/apache-tomcat-7.0.40/lib/servlet-api.jar"/>
+	<classpathentry kind="lib" path="/Captcha/lib/httpclient-4.5.jar"/>
 	<classpathentry kind="output" path="WebRoot/WEB-INF/classes"/>
 </classpath>

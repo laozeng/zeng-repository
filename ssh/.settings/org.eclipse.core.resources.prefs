@@ -1,0 +1,6 @@
+eclipse.preferences.version=1
+encoding//WebContent/WEB-INF/user/freemarker.ftl=UTF-8
+encoding//WebContent/index.jsp=UTF-8
+encoding//src/com/controller/JsonController.java=GBK
+encoding//src/com/sms/interfacej/SmsClientInterface.java=UTF-8
+encoding//src/com/sms/interfacej/SmsClientSend.java=GBK

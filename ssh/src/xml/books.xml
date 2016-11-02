@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<books>
+	<book>
+		<id>1</id>
+		<name>三国演义</name>
+		<price>23.6</price>
+		<author>罗贯中</author>
+		<publisher>人民出版社</publisher>
+	</book>
+	<book>
+		<id>2</id>
+		<name>水浒传</name>
+		<price>33.6</price>
+		<author>施耐庵</author>
+		<publisher>岳麓书院</publisher>
+	</book>
+	<book>
+		<id>3</id>
+		<name>红楼梦</name>
+		<price>24.6</price>
+		<author>曹雪芹</author>
+		<publisher>长沙出版社</publisher>
+	</book>
+</books>

@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.0.xsd
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+	 http://www.springframework.org/schema/aop 
+	 http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+	 http://www.springframework.org/schema/mvc
+	 http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd"> 
+	 
+	<!-- 扫描各个包 -->
+	<context:component-scan base-package="com.*" />
+	
+	<!-- 导入配置文件 -->
+	<context:property-placeholder location="classpath:config.properties" />
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" >
+		<property name="driverClassName" value="${jdbc.driver}"></property>
+		<property name="url" value="${jdbc.url}"></property>
+		<property name="username" value="${jdbc.username}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+	</bean>
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean" >
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">
+					<!-- org.hibernate.dialect.MySQLDialect -->
+					com.util.CustomerDialect
+				</prop>
+			</props>
+		</property>
+		<property name="annotatedClasses">
+			<list>
+<!-- 				<value>com.entity.User</value> -->
+				<value>com.shiro.entity.User</value>
+				<value>com.shiro.entity.Role</value>
+				<value>com.shiro.entity.Permission</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 配置 hibernateTemplate-->
+	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate4.HibernateTemplate">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	
+	<!-- Spring 统一异常处理 ExceptionAdvisor配置 -->
+	<!-- <bean id="exceptionHandler" class="com.common.advice.ExceptionAdvisor" /> -->
+	
+	<!-- 启用支持Annotation注解方式的事务管理 -->
+ 	<bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager"> 
+ 		<property name="sessionFactory" ref="sessionFactory" /> 
+ 	</bean> 
+
+ 	<tx:annotation-driven transaction-manager="transactionManager" /> 
+ 	
+	<!-- 以下配置可以使springmvc同时支持html和jsp以及freemarker视图 -->
+	<!-- velocity表达式需要的配置 -->
+	<bean id="velocityConfigurer" class="org.springframework.web.servlet.view.velocity.VelocityConfigurer"> 
+		<!--声明模板文件所在的路径 (实际资源文件所在的文件夹)-->
+ 	    <property name="resourceLoaderPath" value="WEB-INF/"></property>  
+		<!--设置输入输出的编码方式 -->
+	    <property name="velocityProperties">
+            <props>
+                <prop key="input.encoding">utf-8</prop>
+                <prop key="output.encoding">utf-8</prop>
+            </props>
+        </property>
+	</bean> 
+	<!-- spring 管理下velocity配置 -->
+	<bean id="velocityViewResolver" class="org.springframework.web.servlet.view.velocity.VelocityViewResolver"> 
+		<property name="cache" value="true" />
+        <property name="prefix" value="" />
+		<!--  声明velocity表达式支持的后缀 -->
+ 	    <property name="suffix" value=".html" />
+	    <!-- 配置html的优先级最高 ,注意此处的值越小优先级越高（即spring会先找哪一种视图）-->
+<!-- 	    <property name="order" value="0" /> -->
+		<!-- 如果你需要使用Spring 对 Velocity宏命令的支持, 将这个属性设为true  -->
+        <property name="exposeSpringMacroHelpers" value="true" /> 
+        <property name="contentType" value="text/html;charset=utf-8" />
+        <!-- velocity时间格式化工具 -->
+        <property name="dateToolAttribute" value="date"></property>
+        <!-- 是否开放session -->
+        <property name="exposeSessionAttributes" value="true"></property>
+        <!-- 是否开放request -->
+        <property name="exposeRequestAttributes" value="true"></property>
+        <!-- 允许session覆盖旧值Cannot expose session attribute 'user' because of an existing model object of the same name -->
+        <property name="allowSessionOverride" value="true" ></property>
+        <!-- request引用的名称 -->
+        <property name="requestContextAttribute" value="rc"></property>
+	</bean>
+	
+	<!-- 配置jsp视图解析器 -->
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">   
+	     <property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />  
+	     <property name="prefix" value="/WEB-INF/" />   
+	     <property name="suffix" value=".jsp" />
+<!-- 	     <property name="order" value="1"/>   -->
+	</bean>
+	
+	<!-- freemarker的基本配置，包括模板所在的位置和常用的方法配置 -->
+    <bean id="freemarkerConfig" class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">  
+	    <property name="templateLoaderPath" value="/WEB-INF/" />  
+	    <property name="freemarkerSettings">  
+	        <props>  
+	            <prop key="template_update_delay">0</prop>  
+	            <prop key="default_encoding">UTF-8</prop>  
+	            <prop key="number_format">0.##########</prop>  
+	            <prop key="datetime_format">yyyy-MM-dd HH:mm:ss</prop>  
+	            <prop key="classic_compatible">true</prop>  
+	            <prop key="template_exception_handler">ignore</prop>  
+	        </props>  
+	    </property>  
+	</bean>
+	<!-- freemarker视图解析器 -->
+	<bean id="freemarkerViewResolver" class="org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver">  
+	    <property name="suffix" value=".html" />  
+	    <property name="contentType" value="text/html;charset=UTF-8" />
+	    <!-- 设置freemarker的优先级高于jsp(现在暂时不要改配置，如果要的话那么全局视图就会找ftl后缀的) 一下语句必不可少,配置freemarker视图的优先级最高-->
+		<property name="order" value="0"/> 
+	</bean>
+	
+	<!-- 处理静态资源访问不到(这种情况主要发生在spring的核心控制器配置的过滤路径为 / 的时候,
+		如果加了下面的代码，那么可以直接以路径的形式访问：http://localhost:8080/image//505.png，否则访问不了) -->
+	<mvc:annotation-driven />
+	<mvc:resources location="/js/" mapping="/js/**"/>
+	<mvc:resources location="/image/" mapping="/image/**"/>
+	<mvc:resources location="/carfinance/" mapping="/carfinance/**"/>
+	
+	<!-- view-name是视图名称 -->
+<!-- 	<mvc:view-controller path="/" view-name="index/index"/> -->
+	 
+	 <!-- spring拦截器 -->
+	 <mvc:interceptors>
+	 	<mvc:interceptor>
+	 		<!-- 拦截所有请求(此处拦截所有的请求的前提是DispatcherServlet的url-pattern配置为/ ，那么所有的请求，包括静态资源都会拦截；如果配置不为 / 那么他只会拦截指定的请求) -->
+			<!--<mvc:mapping path="/**"/> -->
+			<!-- 拦截指定的请求 -->
+			<mvc:mapping path="/user/**" />
+			<!-- 排除拦截的地址 -->
+	 		<bean id="springInterceptor" class="com.interceptor.SpringInterceptor"  >
+	 		    <!-- 要跳转的路径 -->
+	 			<property name="redirectUrl" value="/user/loginUI.mvc"></property>
+	 		</bean>
+	 	</mvc:interceptor>
+	 </mvc:interceptors> 
+	 
+	 <!-- spring异常处理 -->
+	 <!-- <bean id="simpleMappingException" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+	 	<property name="exceptionMappings" >
+	 		<props>
+	 			<prop key="springException">spring-exception/500</prop>
+	 		</props>
+	 	</property>
+	 </bean> -->
+	 
+	 <!-- 注意：此处的id必须是 exceptionResolver，以供系统使用(如果配置了该方法，那么控制台将不再打印错误信息)-->
+	 <bean id="exceptionResolver" class="com.exception.SpringException"></bean>
+	 
+	 <!-- 注解增强 -->
+	<!-- <aop:aspectj-autoproxy /> -->
+	<!-- 自定义的增强类 -->
+	<bean id="myException" class="com.exception.MyAopException" /> 
+	<aop:config>
+	    <!-- 切入点 -->
+		<aop:pointcut id="myPoint" expression="execution(* com.controller.*.*(..))" />
+		<!-- 自定义的增强类 -->
+		<aop:aspect ref="myException">
+			<aop:before method="queryBefore" pointcut-ref="myPoint"/>
+<!-- 			<aop:after method="queryAfter" pointcut-ref="myTransaction"/> -->
+			<aop:after-throwing method="afterThrowing" pointcut-ref="myPoint" throwing="exception"/>
+<!-- 			<aop:around method="queryAroud" pointcut-ref="myTransaction" /> -->
+		</aop:aspect>
+	</aop:config>
+	
+	<!-- shiro权限控制的配置 -->
+	<bean id="myShiroRealm" class="com.shiro.controller.MyShiroRealm">
+		<property name="userDao" ref="userDao"></property>
+	</bean>
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<property name="realm" ref="myShiroRealm"></property>
+	</bean>
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<property name="securityManager" ref="securityManager" />  
+		<!-- 没有登录就试图访问受保护资源时，跳转的路径 (此处只能写英文的值，中文的值传递不过去)-->
+        <property name="loginUrl" value="/shiro/loginUI.mvc?error=you don't login!" />  
+        <!-- 登录成功跳转的路径 -->
+        <property name="successUrl" value="/shiro/adminUI.mvc" />  
+        <!-- 没有权限跳转的路径 -->
+        <property name="unauthorizedUrl" value="/shiro/notPermission.mvc" /> 
+        <!-- 动态获取资源(推荐写法) -->
+        <property name="filterChainDefinitionMap" ref="loadPermission"></property> 
+        <!-- 在配置文件中写死需要拦截的路径(不推荐) -->
+        <!-- 
+        <property name="filterChainDefinitions">  
+            <value>  
+                                         无参,表示可匿名使用,可以理解为匿名用户或游客  
+                /shiro/loginUI.mvc = anon 
+               	 前部分是拦截的路径，后部分是需要的权限  
+                /shiro/adminUI.mvc = authc,perms[/shiro/adminUI.mvc]  
+                /shiro/deleteStudent.mvc = authc,perms[/shiro/deleteStudent.mvc]   
+                /shiro/adminUI.mvc = authc,roles[admin]
+                /shiro/deleteStudent.mvc = authc,roles[admin]
+                                         退出登录,注意：前部分是页面退出登录的链接，后部分是退出登录的过滤器
+                /shiro/logout.mvc = logout
+            </value>  
+        </property>   
+        -->
+	</bean>
+	<!-- 退出登录过滤器 -->
+	<bean id="logout" class="org.apache.shiro.web.filter.authc.LogoutFilter">
+	     <!-- 重定向之后的地址 -->
+		<property name="redirectUrl" value="/shiro/loginUI.mvc"></property>
+	</bean>
+	<!-- 动态加载需要拦截的资源过滤器 -->
+	<bean id="loadPermission" class="com.shiro.controller.LoadPermission">
+	   <!--  -->
+		<property name="filterChainDefinitions">
+			<value>
+				/shiro/loginUI.mvc = anon 
+				/shiro/logout.mvc = logout
+			</value>
+		</property>
+	</bean>
+	
+	<!-- quartz相关配置配置 -->
+	<!-- 普通配置：任务类必须实现Job接口，SimpleTrigger触发器 -->
+	<bean id="myJob" class="com.quartz.MyJob"></bean>
+	<bean id="myJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass"  value="com.quartz.MyJob"/>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="message" value="普通配置：任务类必须实现Job接口，SimpleTrigger触发器!"></entry>
+			</map>
+		</property>
+	</bean>
+	<bean id="simpleTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+		<property name="jobDetail" ref="myJobDetail"></property>
+		<!-- 触发器开始延迟时间，单位ms -->
+		<property name="startDelay" value="1000000000"></property>
+		<!-- 触发器执行频率，单位ms -->
+		<property name="repeatInterval" value="1000"></property>
+	</bean>
+	<bean id="myScheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<ref local="simpleTrigger" />
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 特殊配置：任务类可以是任意类 -->
+	<bean id="commonJob" class="com.quartz.CommonJob"></bean>
+	<bean id="invokingFactoryBean" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+	    <!-- 实际任务类 -->
+		<property name="targetObject" >
+			<ref bean="commonJob" />
+		</property>
+		<!-- 实际要执行的方法(注意：该方法不能带有参数) -->
+		<property name="targetMethod" value="execute" />
+	</bean>
+	<bean id="cronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="invokingFactoryBean"></property>
+		<property name="cronExpression" value="0/5 * 16 18 3 ? 2026"></property>
+	</bean>
+	<bean id="myScheduler1" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<ref local="cronTrigger" />
+			</list>
+		</property>
+	</bean>
+</beans>

@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <!-- 引入dwr的js文件，这些文件都是dwr自动生成 -->
+	<script type="text/javascript" src="/dwr/engine.js" ></script>
+	<script type="text/javascript" src="/dwr/util.js" ></script>
+	<script type="text/javascript" src="/dwr/interface/DWRAction.js" ></script>
+	<script type="text/javascript" src="/dwr/interface/format.js" ></script>
+
+	<script type="text/javascript" src="/js/jquery-1.8.3.min.js" ></script>
+	<script type="text/javascript"  >
+		function init(){
+			/*dwr技术调用后台方法，注意：不管后台方法有几个参数，在前台调用时都应该带上最后一个回调函数
+			 如果后台的方法没有参数，那么调用时只需要写上一个回调函数即可
+			此处的DWRAction要跟 dwr/interface/DWRAction.js中一致*/
+			$("#div h").html("");
+			var total = "";
+			DWRAction.getUsers(function(data){
+				for ( var i = 0; i < data.length; i++) {
+					var user = data[i];
+					total += "姓名："+user.username+"，地址："+user.userAddress+"，时间:"+user.userRegisterTime+"<br/>";
+				}
+				$("#div").append(total);
+			});
+		}
+
+		/*function load(data) {
+			for ( var i = 0; i < data.length; i++) {
+				var user = data[i];
+				var value = "id   " + user.user_id + ",name-->"+ user.user_name + ",email-->" + user.user_email;
+				$("#div").append(value + "<br/>");
+			}
+		}*/
+
+		//保存用户名
+		function onSave(){
+// 			DWRAction.save($("[name=name]").val(),saveFun);
+			//DWRAction相当于一个静态类，save()方法的第一个参数为用户名，第二个参数是一个回调函数返回查询的结果
+			DWRAction.save($("[name=name]").val(),function(result){
+				if(result == false){
+					alert("该用户名应经存在！");
+				}else{
+					alert("添加用户名成功！");
+				}
+			});
+		}
+
+		/*function saveFun(result){
+			if(result == false){
+				alert("该用户名应经存在！");
+			}else{
+				alert("添加用户名成功！");
+			}
+		}*/
+
+		//根据id查询用户名
+		function onFind(){
+			DWRAction.findString($("#number").val(),findFun);
+		}
+
+		function findFun(result){
+			if(result == null){
+				alert("没有对应的用户名");
+			}else{
+				alert("您查询的用户名为："+result);
+			}
+		}
+	</script>
+  </head >
+  
+  <body> <!--  onload="init()" -->
+  	  <div id="div" style="color:red;font-size:20px;">
+  	      <h1>使用dwr直接调用后台，获取数据</h1>
+  	  </div><br/><br/>
+  	  
+  	     请输入姓名：<input type="text" name="name" id="name" /><br/>
+  	  <input type="button" value="保存" onclick="onSave()" /><br/>
+  	  
+  	     请输入要查询的id：<input type="text" name="number" id="number" /><br/>
+  	  <input type="button" value="查询" onclick="onFind()" /><br/><br/>
+  	  
+  	  <br/><input type="button" value="获取后台的值" onclick="init()"/> 
+  </body>
+</html>
